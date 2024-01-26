@@ -23,7 +23,7 @@ func (wsc *WorkSpaceCommand) Init(args []string) error {
 func (wsc *WorkSpaceCommand) Name() string {
 	return wsc.fs.Name()
 }
-func (wsc *WorkSpaceCommand) Run() error {
+func (wsc *WorkSpaceCommand) Run(data *WorkSpaces) error {
 	if len(os.Args) <= 2 {
 		printUsage()
 		return errors.New("workspace command requires subcommand")
@@ -40,7 +40,7 @@ func (wsc *WorkSpaceCommand) Run() error {
 	for _, cmd := range subCmds {
 		if cmd.Name() == os.Args[2] {
 			cmd.Init(os.Args[3:])
-			return cmd.Run()
+			return cmd.Run(data)
 		}
 	}
 
@@ -68,12 +68,14 @@ func (new *WsNewCommand) Name() string {
 func (new *WsNewCommand) Init(args []string) error {
 	return new.fs.Parse(args)
 }
-func (new *WsNewCommand) Run() error {
+func (new *WsNewCommand) Run(data *WorkSpaces) error {
 	fmt.Println("This is the workspace command... new subcommand, name: ", new.name)
 	if new.name == "" {
 		printUsage()
 		return errors.New("workspace name is required")
 	}
+
+	(*data)[new.name] = []ContractItem{}
 
 	return nil
 }
@@ -99,12 +101,14 @@ func (del *WsDelCommand) Name() string {
 func (del *WsDelCommand) Init(args []string) error {
 	return del.fs.Parse(args)
 }
-func (del *WsDelCommand) Run() error {
+func (del *WsDelCommand) Run(data *WorkSpaces) error {
 	fmt.Println("This is the workspace command... del subcommand, name: ", del.name)
 	if del.name == "" {
 		printUsage()
 		return errors.New("workspace name is required")
 	}
+
+	delete(*data, del.name)
 
 	return nil
 }
@@ -127,8 +131,14 @@ func (list *WsListCommand) Name() string {
 func (list *WsListCommand) Init(args []string) error {
 	return list.fs.Parse(args)
 }
-func (list *WsListCommand) Run() error {
+func (list *WsListCommand) Run(data *WorkSpaces) error {
 	fmt.Println("list subcommand TODO")
+	for _, workspace := range *data {
+		for _, item := range workspace {
+			fmt.Println("contract: ", item.Name, " address: ", item.Address, " note: ", item.Note)
+		}
+	}
+
 	return nil
 }
 
@@ -157,8 +167,11 @@ func (save *WsSaveCommand) Name() string {
 func (save *WsSaveCommand) Init(args []string) error {
 	return save.fs.Parse(args)
 }
-func (save *WsSaveCommand) Run() error {
+func (save *WsSaveCommand) Run(data *WorkSpaces) error {
 	fmt.Println("save subcommand TODO, workspace: ", save.workspace, " contract: ", save.contract, " address: ", save.address)
+
+	(*data)[save.workspace] = append((*data)[save.workspace], ContractItem{save.contract, save.address, ""})
+
 	return nil
 }
 
@@ -187,8 +200,25 @@ func (update *WsUpdateCommand) Name() string {
 func (update *WsUpdateCommand) Init(args []string) error {
 	return update.fs.Parse(args)
 }
-func (update *WsUpdateCommand) Run() error {
+func (update *WsUpdateCommand) Run(data *WorkSpaces) error {
 	fmt.Println("update subcommand TODO, workspace: ", update.workspace, " contract: ", update.contract, " address: ", update.address)
+
+	workspace, ok := (*data)[update.workspace]
+	if !ok {
+		return errors.New("workspace not found")
+	}
+
+	find := false
+	for _, i := range workspace {
+		if i.Name == update.contract {
+			i.Address = update.address
+			find = true
+		}
+	}
+
+	if !find {
+		return errors.New("contract not found")
+	}
 	return nil
 }
 
@@ -217,14 +247,33 @@ func (delete *WsDeleteCommand) Name() string {
 func (delete *WsDeleteCommand) Init(args []string) error {
 	return delete.fs.Parse(args)
 }
-func (delete *WsDeleteCommand) Run() error {
+func (delete *WsDeleteCommand) Run(data *WorkSpaces) error {
 	fmt.Println("delete subcommand TODO, workspace: ", delete.workspace, " contract: ", delete.contract, " address: ", delete.address)
+
+	workspace, ok := (*data)[delete.workspace]
+	if !ok {
+		return errors.New("workspace not found")
+	}
+
+	find := false
+	for i, contractItem := range workspace {
+		if contractItem.Name == delete.contract {
+			workspace = append(workspace[:i], workspace[i+1:]...)
+			(*data)[delete.workspace] = workspace
+			find = true
+		}
+	}
+
+	if !find {
+		return errors.New("contract not found")
+	}
+
 	return nil
 }
 
 type Runner interface {
 	Init([]string) error
-	Run() error
+	Run(*WorkSpaces) error
 	Name() string
 }
 
@@ -243,11 +292,20 @@ func run(args []string) error {
 		NewWorkSpaceCommand(),
 	}
 
+	data, err := LoadWorkSpaces()
+	if err != nil {
+		return errors.New("load workspaces error: " + err.Error())
+	}
+
 	for _, cmd := range cmds {
 		if cmd.Name() == args[0] {
 			cmd.Init(os.Args[2:])
-			return cmd.Run()
+			return cmd.Run(&data)
 		}
+	}
+
+	if err := SaveWorkSpaces(&data); err != nil {
+		return errors.New("save workspaces error: " + err.Error())
 	}
 
 	printUsage()
