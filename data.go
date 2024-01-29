@@ -23,13 +23,16 @@ type DataBase struct {
 	Workspaces map[string]WorkSpace
 }
 
+var ErrWorkSpaceExists = errors.New("workspace already exists")
+var ErrWorkSpaceNotFound = errors.New("workspace not found")
+
 func (db *DataBase) CreateWorkSpace(name string) error {
 	if db.Workspaces == nil {
 		db.Workspaces = make(map[string]WorkSpace)
 	}
 
 	if _, ok := db.Workspaces[name]; ok {
-		return errors.New("workspace already exists")
+		return ErrWorkSpaceExists
 	}
 
 	db.Workspaces[name] = WorkSpace{Cs: make(map[string]Contract)}
@@ -38,17 +41,19 @@ func (db *DataBase) CreateWorkSpace(name string) error {
 
 func (db *DataBase) DeleteWorkSpace(name string) error {
 	if db.Workspaces == nil {
-		return errors.New("workspaces not found")
+		return ErrWorkSpaceNotFound
 	}
 
 	delete(db.Workspaces, name)
-	return errors.New("workspace not found")
+	return nil
 }
 
-func (db *DataBase) ListWorkSpaces() {
+func (db *DataBase) ListWorkSpaces() []string {
+	spaces := make([]string, 0, len(db.Workspaces))
 	for name := range db.Workspaces {
-		fmt.Println(name)
+		spaces = append(spaces, name)
 	}
+	return spaces
 }
 
 func (db *DataBase) Save(workspace string, contract string, address string, note string) error {
