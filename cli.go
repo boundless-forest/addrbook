@@ -23,7 +23,7 @@ func (wsc *WorkSpaceCommand) Init(args []string) error {
 func (wsc *WorkSpaceCommand) Name() string {
 	return wsc.fs.Name()
 }
-func (wsc *WorkSpaceCommand) Run(data *WorkSpaces) error {
+func (wsc *WorkSpaceCommand) Run(db *DataBase) error {
 	if len(os.Args) <= 2 {
 		printUsage()
 		return errors.New("workspace command requires subcommand")
@@ -40,7 +40,7 @@ func (wsc *WorkSpaceCommand) Run(data *WorkSpaces) error {
 	for _, cmd := range subCmds {
 		if cmd.Name() == os.Args[2] {
 			cmd.Init(os.Args[3:])
-			return cmd.Run(data)
+			return cmd.Run(db)
 		}
 	}
 
@@ -68,14 +68,16 @@ func (new *WsNewCommand) Name() string {
 func (new *WsNewCommand) Init(args []string) error {
 	return new.fs.Parse(args)
 }
-func (new *WsNewCommand) Run(data *WorkSpaces) error {
+func (new *WsNewCommand) Run(db *DataBase) error {
 	fmt.Println("This is the workspace command... new subcommand, name: ", new.name)
 	if new.name == "" {
 		printUsage()
 		return errors.New("workspace name is required")
 	}
 
-	(*data)[new.name] = []ContractItem{}
+	if err := db.CreateWorkSpace(new.name); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -101,15 +103,16 @@ func (del *WsDelCommand) Name() string {
 func (del *WsDelCommand) Init(args []string) error {
 	return del.fs.Parse(args)
 }
-func (del *WsDelCommand) Run(data *WorkSpaces) error {
+func (del *WsDelCommand) Run(db *DataBase) error {
 	fmt.Println("This is the workspace command... del subcommand, name: ", del.name)
 	if del.name == "" {
 		printUsage()
 		return errors.New("workspace name is required")
 	}
 
-	delete(*data, del.name)
-
+	if err := db.DeleteWorkSpace(del.name); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -131,13 +134,9 @@ func (list *WsListCommand) Name() string {
 func (list *WsListCommand) Init(args []string) error {
 	return list.fs.Parse(args)
 }
-func (list *WsListCommand) Run(data *WorkSpaces) error {
+func (list *WsListCommand) Run(db *DataBase) error {
 	fmt.Println("list subcommand TODO")
-	for _, workspace := range *data {
-		for _, item := range workspace {
-			fmt.Println("contract: ", item.Name, " address: ", item.Address, " note: ", item.Note)
-		}
-	}
+	db.ListWorkSpaces()
 
 	return nil
 }
@@ -150,6 +149,7 @@ type WsSaveCommand struct {
 	workspace string
 	contract  string
 	address   string
+	note      string
 }
 
 func NewWsSaveCommand() *WsSaveCommand {
@@ -159,6 +159,7 @@ func NewWsSaveCommand() *WsSaveCommand {
 	save.fs.StringVar(&save.workspace, "workspace", "", "The name of the workspace")
 	save.fs.StringVar(&save.contract, "contract", "", "The name of the contract")
 	save.fs.StringVar(&save.address, "address", "", "The address of the contract")
+	save.fs.StringVar(&save.note, "note", "", "The extra information of the contract")
 	return &save
 }
 func (save *WsSaveCommand) Name() string {
@@ -167,11 +168,12 @@ func (save *WsSaveCommand) Name() string {
 func (save *WsSaveCommand) Init(args []string) error {
 	return save.fs.Parse(args)
 }
-func (save *WsSaveCommand) Run(data *WorkSpaces) error {
+func (save *WsSaveCommand) Run(db *DataBase) error {
 	fmt.Println("save subcommand TODO, workspace: ", save.workspace, " contract: ", save.contract, " address: ", save.address)
 
-	(*data)[save.workspace] = append((*data)[save.workspace], ContractItem{save.contract, save.address, ""})
-
+	if err := db.Save(save.workspace, save.contract, save.address, save.note); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -183,6 +185,7 @@ type WsUpdateCommand struct {
 	workspace string
 	contract  string
 	address   string
+	note      string
 }
 
 func NewWsUpdateCommand() *WsSaveCommand {
@@ -192,6 +195,7 @@ func NewWsUpdateCommand() *WsSaveCommand {
 	update.fs.StringVar(&update.workspace, "workspace", "", "The name of the workspace")
 	update.fs.StringVar(&update.contract, "contract", "", "The name of the contract")
 	update.fs.StringVar(&update.address, "address", "", "The address of the contract")
+	update.fs.StringVar(&update.note, "note", "", "The extra information of the contract")
 	return &update
 }
 func (update *WsUpdateCommand) Name() string {
@@ -200,24 +204,11 @@ func (update *WsUpdateCommand) Name() string {
 func (update *WsUpdateCommand) Init(args []string) error {
 	return update.fs.Parse(args)
 }
-func (update *WsUpdateCommand) Run(data *WorkSpaces) error {
+func (update *WsUpdateCommand) Run(db *DataBase) error {
 	fmt.Println("update subcommand TODO, workspace: ", update.workspace, " contract: ", update.contract, " address: ", update.address)
 
-	workspace, ok := (*data)[update.workspace]
-	if !ok {
-		return errors.New("workspace not found")
-	}
-
-	find := false
-	for _, i := range workspace {
-		if i.Name == update.contract {
-			i.Address = update.address
-			find = true
-		}
-	}
-
-	if !find {
-		return errors.New("contract not found")
+	if err := db.Update(update.workspace, update.contract, update.address, update.note); err != nil {
+		return err
 	}
 	return nil
 }
@@ -229,7 +220,6 @@ type WsDeleteCommand struct {
 
 	workspace string
 	contract  string
-	address   string
 }
 
 func NewWsDeleteCommand() *WsSaveCommand {
@@ -238,7 +228,6 @@ func NewWsDeleteCommand() *WsSaveCommand {
 	}
 	delete.fs.StringVar(&delete.workspace, "workspace", "", "The name of the workspace")
 	delete.fs.StringVar(&delete.contract, "contract", "", "The name of the contract")
-	delete.fs.StringVar(&delete.address, "address", "", "The address of the contract")
 	return &delete
 }
 func (delete *WsDeleteCommand) Name() string {
@@ -247,33 +236,18 @@ func (delete *WsDeleteCommand) Name() string {
 func (delete *WsDeleteCommand) Init(args []string) error {
 	return delete.fs.Parse(args)
 }
-func (delete *WsDeleteCommand) Run(data *WorkSpaces) error {
-	fmt.Println("delete subcommand TODO, workspace: ", delete.workspace, " contract: ", delete.contract, " address: ", delete.address)
+func (delete *WsDeleteCommand) Run(db *DataBase) error {
+	fmt.Println("delete subcommand TODO, workspace: ", delete.workspace, " contract: ", delete.contract)
 
-	workspace, ok := (*data)[delete.workspace]
-	if !ok {
-		return errors.New("workspace not found")
+	if err := db.Delete(delete.workspace, delete.contract); err != nil {
+		return err
 	}
-
-	find := false
-	for i, contractItem := range workspace {
-		if contractItem.Name == delete.contract {
-			workspace = append(workspace[:i], workspace[i+1:]...)
-			(*data)[delete.workspace] = workspace
-			find = true
-		}
-	}
-
-	if !find {
-		return errors.New("contract not found")
-	}
-
 	return nil
 }
 
 type Runner interface {
 	Init([]string) error
-	Run(*WorkSpaces) error
+	Run(*DataBase) error
 	Name() string
 }
 
@@ -292,7 +266,7 @@ func run(args []string) error {
 		NewWorkSpaceCommand(),
 	}
 
-	data, err := LoadWorkSpaces()
+	db, err := LoadDB()
 	if err != nil {
 		return errors.New("load workspaces error: " + err.Error())
 	}
@@ -300,11 +274,11 @@ func run(args []string) error {
 	for _, cmd := range cmds {
 		if cmd.Name() == args[0] {
 			cmd.Init(os.Args[2:])
-			return cmd.Run(&data)
+			return cmd.Run(&db)
 		}
 	}
 
-	if err := SaveWorkSpaces(&data); err != nil {
+	if err := SaveToDB(&db); err != nil {
 		return errors.New("save workspaces error: " + err.Error())
 	}
 
