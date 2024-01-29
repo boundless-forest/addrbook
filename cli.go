@@ -74,9 +74,11 @@ func (new *WsNewCommand) Run(db *DataBase) error {
 		printUsage()
 		return errors.New("workspace name is required")
 	}
-
 	if err := db.CreateWorkSpace(new.name); err != nil {
 		return err
+	}
+	if err := SaveToDB(db); err != nil {
+		return errors.New("save workspaces error: " + err.Error())
 	}
 
 	return nil
@@ -112,6 +114,9 @@ func (del *WsDelCommand) Run(db *DataBase) error {
 
 	if err := db.DeleteWorkSpace(del.name); err != nil {
 		return err
+	}
+	if err := SaveToDB(db); err != nil {
+		return errors.New("save workspaces error: " + err.Error())
 	}
 	return nil
 }
@@ -169,11 +174,16 @@ func (save *WsSaveCommand) Init(args []string) error {
 	return save.fs.Parse(args)
 }
 func (save *WsSaveCommand) Run(db *DataBase) error {
-	fmt.Println("save subcommand TODO, workspace: ", save.workspace, " contract: ", save.contract, " address: ", save.address)
+	fmt.Println("save subcommand TODO, workspace: ", save.workspace, " contract: ", save.contract, " address: ", save.address, " note: ", save.note)
 
 	if err := db.Save(save.workspace, save.contract, save.address, save.note); err != nil {
 		return err
 	}
+	fmt.Printf("%+v\n", db)
+	if err := SaveToDB(db); err != nil {
+		return errors.New("save workspaces error: " + err.Error())
+	}
+
 	return nil
 }
 
@@ -210,6 +220,9 @@ func (update *WsUpdateCommand) Run(db *DataBase) error {
 	if err := db.Update(update.workspace, update.contract, update.address, update.note); err != nil {
 		return err
 	}
+	if err := SaveToDB(db); err != nil {
+		return errors.New("save workspaces error: " + err.Error())
+	}
 	return nil
 }
 
@@ -241,6 +254,9 @@ func (delete *WsDeleteCommand) Run(db *DataBase) error {
 
 	if err := db.Delete(delete.workspace, delete.contract); err != nil {
 		return err
+	}
+	if err := SaveToDB(db); err != nil {
+		return errors.New("save workspaces error: " + err.Error())
 	}
 	return nil
 }
@@ -276,10 +292,6 @@ func run(args []string) error {
 			cmd.Init(os.Args[2:])
 			return cmd.Run(&db)
 		}
-	}
-
-	if err := SaveToDB(&db); err != nil {
-		return errors.New("save workspaces error: " + err.Error())
 	}
 
 	printUsage()

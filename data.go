@@ -16,95 +16,94 @@ type Contract struct {
 }
 
 type WorkSpace struct {
-	cs map[string]Contract
+	Cs map[string]Contract
 }
 
 type DataBase struct {
-	workspaces map[string]WorkSpace
+	Workspaces map[string]WorkSpace
 }
 
 func (db *DataBase) CreateWorkSpace(name string) error {
-	if db.workspaces == nil {
-		db.workspaces = make(map[string]WorkSpace)
+	if db.Workspaces == nil {
+		db.Workspaces = make(map[string]WorkSpace)
 	}
 
-	if _, ok := db.workspaces[name]; ok {
+	if _, ok := db.Workspaces[name]; ok {
 		return errors.New("workspace already exists")
 	}
 
-	db.workspaces[name] = WorkSpace{cs: make(map[string]Contract)}
+	db.Workspaces[name] = WorkSpace{Cs: make(map[string]Contract)}
 	return nil
 }
 
 func (db *DataBase) DeleteWorkSpace(name string) error {
-	if db.workspaces == nil {
+	if db.Workspaces == nil {
 		return errors.New("workspaces not found")
 	}
 
-	if _, ok := db.workspaces[name]; ok {
-		delete(db.workspaces, name)
-	}
+	delete(db.Workspaces, name)
 	return errors.New("workspace not found")
 }
 
 func (db *DataBase) ListWorkSpaces() {
-	for name, _ := range db.workspaces {
+	for name := range db.Workspaces {
 		fmt.Println(name)
 	}
 }
 
 func (db *DataBase) Save(workspace string, contract string, address string, note string) error {
-	if _, ok := db.workspaces[workspace]; ok {
+	if _, ok := db.Workspaces[workspace]; !ok {
 		return errors.New("workspace not found")
 	}
 
-	ws := db.workspaces[workspace]
-	if _, ok := ws.cs[contract]; ok {
+	ws := db.Workspaces[workspace]
+	if _, ok := ws.Cs[contract]; ok {
 		return errors.New("contract already exists")
 	}
-
-	ws.cs[contract] = Contract{
-		Name:    contract,
-		Address: address,
-		Note:    note,
+	ws.Cs = map[string]Contract{
+		contract: {
+			Name:    contract,
+			Address: address,
+			Note:    note,
+		},
 	}
 
-	db.workspaces[workspace] = ws
+	db.Workspaces[workspace] = ws
 	return nil
 }
 
 func (db *DataBase) Update(workspace string, contract string, address string, note string) error {
-	if _, ok := db.workspaces[workspace]; ok {
+	if _, ok := db.Workspaces[workspace]; ok {
 		return errors.New("workspace not found")
 	}
 
-	ws := db.workspaces[workspace]
-	if _, ok := ws.cs[contract]; !ok {
+	ws := db.Workspaces[workspace]
+	if _, ok := ws.Cs[contract]; !ok {
 		return errors.New("contract not found")
 	}
 
-	ws.cs[contract] = Contract{
+	ws.Cs[contract] = Contract{
 		Name:    contract,
 		Address: address,
 		Note:    note,
 	}
 
-	db.workspaces[workspace] = ws
+	db.Workspaces[workspace] = ws
 	return nil
 }
 
 func (db *DataBase) Delete(workspace string, contract string) error {
-	if _, ok := db.workspaces[workspace]; ok {
+	if _, ok := db.Workspaces[workspace]; ok {
 		return errors.New("workspace not found")
 	}
 
-	ws := db.workspaces[workspace]
-	if _, ok := ws.cs[contract]; !ok {
+	ws := db.Workspaces[workspace]
+	if _, ok := ws.Cs[contract]; !ok {
 		return errors.New("contract not found")
 	}
-	delete(ws.cs, contract)
+	delete(ws.Cs, contract)
 
-	db.workspaces[workspace] = ws
+	db.Workspaces[workspace] = ws
 	return nil
 }
 
@@ -115,25 +114,52 @@ func LoadDB() (DataBase, error) {
 	}
 
 	dataPath := filepath.Join(homeDir, ".addrbook", "data.json")
+	dirPath := filepath.Dir(dataPath)
+
+	_, err = os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		err := os.MkdirAll(dirPath, os.ModePerm)
+		if err != nil {
+			return DataBase{}, err
+		}
+	}
+
 	_, err = os.Stat(dataPath)
 	if os.IsNotExist(err) {
-		return DataBase{}, nil
-	}
+		defaultDB := DataBase{}
+		file, err := os.Create(dataPath)
+		if err != nil {
+			return defaultDB, err
+		}
+		defer file.Close()
 
-	file, err := os.Open(dataPath)
-	if err != nil {
-		return DataBase{}, err
-	}
-	defer file.Close()
+		byteValue, err := json.MarshalIndent(defaultDB, "", "    ")
+		if err != nil {
+			return defaultDB, err
+		}
 
-	byteValue, _ := io.ReadAll(file)
-	var db DataBase
-	err = json.Unmarshal(byteValue, &db)
-	if err != nil {
-		return DataBase{}, err
-	}
+		_, err = file.Write(byteValue)
+		if err != nil {
+			return defaultDB, err
+		}
 
-	return db, nil
+		return defaultDB, nil
+	} else {
+		file, err := os.Open(dataPath)
+		if err != nil {
+			return DataBase{}, err
+		}
+		defer file.Close()
+
+		byteValue, _ := io.ReadAll(file)
+		db := DataBase{}
+		err = json.Unmarshal(byteValue, &db)
+		if err != nil {
+			return DataBase{}, err
+		}
+		return db, nil
+
+	}
 }
 
 func SaveToDB(db *DataBase) error {
@@ -143,22 +169,37 @@ func SaveToDB(db *DataBase) error {
 	}
 
 	dataPath := filepath.Join(homeDir, ".addrbook", "data.json")
+	dirPath := filepath.Dir(dataPath)
+
+	_, err = os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		err := os.MkdirAll(dirPath, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
 	_, err = os.Stat(dataPath)
 	if os.IsNotExist(err) {
 		panic(err)
 	}
 
-	file, err := os.Open(dataPath)
+	file, err := os.Create(dataPath)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	byteValue, err := json.MarshalIndent(db, "", "    ")
+	fmt.Printf("In the Save function: %+v\n", db)
+	jsonData, err := json.MarshalIndent(db, "", "    ")
 	if err != nil {
 		return err
 	}
 
-	_, err = file.Write(byteValue)
+	_, err = file.Write(jsonData)
+	if err != nil {
+		return err
+	}
+
 	return err
 }
