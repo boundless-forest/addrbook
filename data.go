@@ -26,6 +26,9 @@ type DataBase struct {
 var ErrWorkSpaceExists = errors.New("workspace already exists")
 var ErrWorkSpaceNotFound = errors.New("workspace not found")
 
+var ErrContractExists = errors.New("contract already exists")
+var ErrContractNotFound = errors.New("contract not found")
+
 func (db *DataBase) CreateWorkSpace(name string) error {
 	if db.Workspaces == nil {
 		db.Workspaces = make(map[string]WorkSpace)
@@ -58,19 +61,18 @@ func (db *DataBase) ListWorkSpaces() []string {
 
 func (db *DataBase) Save(workspace string, contract string, address string, note string) error {
 	if _, ok := db.Workspaces[workspace]; !ok {
-		return errors.New("workspace not found")
+		return ErrWorkSpaceNotFound
 	}
 
 	ws := db.Workspaces[workspace]
 	if _, ok := ws.Cs[contract]; ok {
-		return errors.New("contract already exists")
+		return ErrContractExists
 	}
-	ws.Cs = map[string]Contract{
-		contract: {
-			Name:    contract,
-			Address: address,
-			Note:    note,
-		},
+
+	ws.Cs[contract] = Contract{
+		Name:    contract,
+		Address: address,
+		Note:    note,
 	}
 
 	db.Workspaces[workspace] = ws
@@ -78,13 +80,18 @@ func (db *DataBase) Save(workspace string, contract string, address string, note
 }
 
 func (db *DataBase) Update(workspace string, contract string, address string, note string) error {
-	if _, ok := db.Workspaces[workspace]; ok {
-		return errors.New("workspace not found")
+	ws, ok := db.Workspaces[workspace]
+	if !ok {
+		return ErrWorkSpaceNotFound
 	}
 
-	ws := db.Workspaces[workspace]
-	if _, ok := ws.Cs[contract]; !ok {
-		return errors.New("contract not found")
+	existingContract, ok := ws.Cs[contract]
+	if !ok {
+		return ErrContractNotFound
+	}
+
+	if address == existingContract.Address && note == existingContract.Note {
+		return errors.New("the new contract information is the same as the old one")
 	}
 
 	ws.Cs[contract] = Contract{
@@ -98,14 +105,15 @@ func (db *DataBase) Update(workspace string, contract string, address string, no
 }
 
 func (db *DataBase) Delete(workspace string, contract string) error {
-	if _, ok := db.Workspaces[workspace]; ok {
-		return errors.New("workspace not found")
+	ws, ok := db.Workspaces[workspace]
+	if !ok {
+		return ErrWorkSpaceNotFound
 	}
 
-	ws := db.Workspaces[workspace]
 	if _, ok := ws.Cs[contract]; !ok {
-		return errors.New("contract not found")
+		return ErrContractNotFound
 	}
+
 	delete(ws.Cs, contract)
 
 	db.Workspaces[workspace] = ws
