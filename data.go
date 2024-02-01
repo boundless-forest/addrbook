@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -203,7 +202,6 @@ func SaveToDB(db *DataBase) error {
 	}
 	defer file.Close()
 
-	fmt.Printf("In the Save function: %+v\n", db)
 	jsonData, err := json.MarshalIndent(db, "", "    ")
 	if err != nil {
 		return err

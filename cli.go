@@ -69,7 +69,6 @@ func (new *WsNewCommand) Init(args []string) error {
 	return new.fs.Parse(args)
 }
 func (new *WsNewCommand) Run(db *DataBase) error {
-	fmt.Println("This is the workspace command... new subcommand, name: ", new.name)
 	if new.name == "" {
 		printUsage()
 		return errors.New("workspace name is required")
@@ -81,6 +80,7 @@ func (new *WsNewCommand) Run(db *DataBase) error {
 		return errors.New("save workspaces error: " + err.Error())
 	}
 
+	fmt.Printf("workspace %s created successfully", new.name)
 	return nil
 }
 
@@ -106,7 +106,6 @@ func (del *WsDelCommand) Init(args []string) error {
 	return del.fs.Parse(args)
 }
 func (del *WsDelCommand) Run(db *DataBase) error {
-	fmt.Println("This is the workspace command... del subcommand, name: ", del.name)
 	if del.name == "" {
 		printUsage()
 		return errors.New("workspace name is required")
@@ -118,6 +117,8 @@ func (del *WsDelCommand) Run(db *DataBase) error {
 	if err := SaveToDB(db); err != nil {
 		return errors.New("save workspaces error: " + err.Error())
 	}
+
+	fmt.Printf("workspace %s deleted successfully", del.name)
 	return nil
 }
 
@@ -140,9 +141,7 @@ func (list *WsListCommand) Init(args []string) error {
 	return list.fs.Parse(args)
 }
 func (list *WsListCommand) Run(db *DataBase) error {
-	fmt.Println("list subcommand TODO")
-	db.ListWorkSpaces()
-
+	fmt.Println("workspaces:", db.ListWorkSpaces())
 	return nil
 }
 
@@ -174,16 +173,14 @@ func (save *WsSaveCommand) Init(args []string) error {
 	return save.fs.Parse(args)
 }
 func (save *WsSaveCommand) Run(db *DataBase) error {
-	fmt.Println("save subcommand TODO, workspace: ", save.workspace, " contract: ", save.contract, " address: ", save.address, " note: ", save.note)
-
 	if err := db.Save(save.workspace, save.contract, save.address, save.note); err != nil {
 		return err
 	}
-	fmt.Printf("%+v\n", db)
 	if err := SaveToDB(db); err != nil {
 		return errors.New("save workspaces error: " + err.Error())
 	}
 
+	fmt.Println("The contract information has been saved successfully")
 	return nil
 }
 
@@ -198,8 +195,8 @@ type WsUpdateCommand struct {
 	note      string
 }
 
-func NewWsUpdateCommand() *WsSaveCommand {
-	update := WsSaveCommand{
+func NewWsUpdateCommand() *WsUpdateCommand {
+	update := WsUpdateCommand{
 		fs: flag.NewFlagSet("update", flag.ContinueOnError),
 	}
 	update.fs.StringVar(&update.workspace, "workspace", "", "The name of the workspace")
@@ -215,14 +212,13 @@ func (update *WsUpdateCommand) Init(args []string) error {
 	return update.fs.Parse(args)
 }
 func (update *WsUpdateCommand) Run(db *DataBase) error {
-	fmt.Println("update subcommand TODO, workspace: ", update.workspace, " contract: ", update.contract, " address: ", update.address)
-
 	if err := db.Update(update.workspace, update.contract, update.address, update.note); err != nil {
 		return err
 	}
 	if err := SaveToDB(db); err != nil {
 		return errors.New("save workspaces error: " + err.Error())
 	}
+	fmt.Println("The contract information has been updated successfully")
 	return nil
 }
 
@@ -250,14 +246,13 @@ func (delete *WsDeleteCommand) Init(args []string) error {
 	return delete.fs.Parse(args)
 }
 func (delete *WsDeleteCommand) Run(db *DataBase) error {
-	fmt.Println("delete subcommand TODO, workspace: ", delete.workspace, " contract: ", delete.contract)
-
 	if err := db.Delete(delete.workspace, delete.contract); err != nil {
 		return err
 	}
 	if err := SaveToDB(db); err != nil {
 		return errors.New("save workspaces error: " + err.Error())
 	}
+	fmt.Println("The contract information has been deleted successfully")
 	return nil
 }
 
