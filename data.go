@@ -219,26 +219,40 @@ func generateHtmlPage(db *DataBase) (string, error) {
 		<html>
 		<head>
 			<title>Contracts</title>
+			<style>
+				table {
+					width: 100%;
+					border-collapse: collapse;
+				}
+				th, td {
+					border: 1px solid black;
+					padding: 5px;
+					text-align: left;
+				}
+				td {
+					word-wrap: break-word;
+				}
+			</style>
 		</head>
 		<body>
+			{{range $wsKey, $ws := .Workspaces}}
+			<h2>{{$wsKey}}</h2>
 			<table>
 				<tr><th>Name</th><th>Address</th><th>Note</th></tr>
-				{{range $ws := .Workspaces}}
-				{{range $contract := $ws.Contract}}
+				{{range $contractKey, $contract := $ws.Contract}}
 				<tr>
 					<td>{{$contract.Name}}</td>
 					<td>{{$contract.Address}}</td>
 					<td>{{$contract.Note}}</td>
 				</tr>
 				{{end}}
-				{{end}}
 			</table>
+			{{end}}
 		</body>
 		</html>`)
 	if err != nil {
 		return "", err
 	}
-
 	var tpl bytes.Buffer
 	if err := tmpl.Execute(&tpl, db); err != nil {
 		return "", err
