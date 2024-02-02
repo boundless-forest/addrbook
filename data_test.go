@@ -78,11 +78,11 @@ func TestSave(t *testing.T) {
 	db.Save("test0", "test contract", "test address", "test note")
 	db.Save("test0", "test contract 1", "test address 1", "test note")
 
-	if len(db.Workspaces["test0"].Cs) != 2 {
-		t.Errorf("Expected 2 contract, got %d", len(db.Workspaces["test0"].Cs))
+	if len(db.Workspaces["test0"].Contract) != 2 {
+		t.Errorf("Expected 2 contract, got %d", len(db.Workspaces["test0"].Contract))
 	}
 
-	contract := db.Workspaces["test0"].Cs["test contract"]
+	contract := db.Workspaces["test0"].Contract["test contract"]
 	assert.Equal(t, "test contract", contract.Name)
 	assert.Equal(t, "test address", contract.Address)
 	assert.Equal(t, "test note", contract.Note)
@@ -96,7 +96,7 @@ func TestUpdate(t *testing.T) {
 
 	db.CreateWorkSpace("test0")
 	db.Save("test0", "test contract", "test address", "test note")
-	contract := db.Workspaces["test0"].Cs["test contract"]
+	contract := db.Workspaces["test0"].Contract["test contract"]
 	assert.Equal(t, "test address", contract.Address)
 
 	if err := db.Update("test0", "test contract 2", "test address updated", "test note"); !errors.Is(err, ErrContractNotFound) {
@@ -106,7 +106,7 @@ func TestUpdate(t *testing.T) {
 	if err := db.Update("test0", "test contract", "test address updated", "test note"); err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
-	contract = db.Workspaces["test0"].Cs["test contract"]
+	contract = db.Workspaces["test0"].Contract["test contract"]
 	assert.Equal(t, "test address updated", contract.Address)
 
 }
@@ -123,8 +123,8 @@ func TestDelete(t *testing.T) {
 	db.Save("test0", "test contract 3", "test address 3", "test note")
 	db.Save("test0", "test contract 4", "test address 4", "test note")
 	workspace := db.Workspaces["test0"]
-	if len(workspace.Cs) != 4 {
-		t.Errorf("Expected 4 contract, got %d", len(workspace.Cs))
+	if len(workspace.Contract) != 4 {
+		t.Errorf("Expected 4 contract, got %d", len(workspace.Contract))
 	}
 
 	if err := db.Delete("test0", "test contract 9"); !errors.Is(err, ErrContractNotFound) {
@@ -133,10 +133,10 @@ func TestDelete(t *testing.T) {
 	if err := db.Delete("test0", "test contract 2"); err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
-	if len(workspace.Cs) != 3 {
-		t.Errorf("Expected 3 contract, got %d", len(workspace.Cs))
+	if len(workspace.Contract) != 3 {
+		t.Errorf("Expected 3 contract, got %d", len(workspace.Contract))
 	}
-	if contract, ok := db.Workspaces["test0"].Cs["test contract 2"]; ok {
+	if contract, ok := db.Workspaces["test0"].Contract["test contract 2"]; ok {
 		t.Errorf("Expected contract 'test contract 2' to be deleted, got %v", contract)
 	}
 }

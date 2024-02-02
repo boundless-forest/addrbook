@@ -119,76 +119,52 @@ func (db *DataBase) Delete(workspace string, contract string) error {
 	return nil
 }
 
-func LoadDB() (DataBase, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return DataBase{}, err
-	}
-
-	dataPath := filepath.Join(homeDir, ".addrbook", "data.json")
-	dirPath := filepath.Dir(dataPath)
-
-	_, err = os.Stat(dirPath)
-	if os.IsNotExist(err) {
-		err := os.MkdirAll(dirPath, os.ModePerm)
-		if err != nil {
-			return DataBase{}, err
-		}
-	}
-
-	_, err = os.Stat(dataPath)
-	if os.IsNotExist(err) {
-		defaultDB := DataBase{}
-		file, err := os.Create(dataPath)
-		if err != nil {
-			return defaultDB, err
-		}
-		defer file.Close()
-
-		byteValue, err := json.MarshalIndent(defaultDB, "", "    ")
-		if err != nil {
-			return defaultDB, err
-		}
-
-		_, err = file.Write(byteValue)
-		if err != nil {
-			return defaultDB, err
-		}
-
-		return defaultDB, nil
-	} else {
-		file, err := os.Open(dataPath)
-		if err != nil {
-			return DataBase{}, err
-		}
-		defer file.Close()
-
-		byteValue, _ := io.ReadAll(file)
-		db := DataBase{}
-		err = json.Unmarshal(byteValue, &db)
-		if err != nil {
-			return DataBase{}, err
-		}
-		return db, nil
-
-	}
-}
-
-func SaveToDB(db *DataBase) error {
-	homeDir, err := os.UserHomeDir()
+func LoadDB(db *DataBase) error {
+	dataPath, err := dataPath()
 	if err != nil {
 		return err
 	}
 
-	dataPath := filepath.Join(homeDir, ".addrbook", "data.json")
-	dirPath := filepath.Dir(dataPath)
-
-	_, err = os.Stat(dirPath)
+	_, err = os.Stat(dataPath)
 	if os.IsNotExist(err) {
-		err := os.MkdirAll(dirPath, os.ModePerm)
+		file, err := os.Create(dataPath)
 		if err != nil {
 			return err
 		}
+		defer file.Close()
+
+		byteValue, err := json.MarshalIndent(db, "", "    ")
+		if err != nil {
+			return err
+		}
+
+		_, err = file.Write(byteValue)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	} else {
+		file, err := os.Open(dataPath)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		byteValue, _ := io.ReadAll(file)
+		err = json.Unmarshal(byteValue, &db)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func SaveToDB(db *DataBase) error {
+	dataPath, err := dataPath()
+	if err != nil {
+		return err
 	}
 
 	_, err = os.Stat(dataPath)
@@ -212,5 +188,25 @@ func SaveToDB(db *DataBase) error {
 		return err
 	}
 
-	return err
+	return nil
+}
+
+func dataPath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	dataPath := filepath.Join(homeDir, ".addrbook", "data.json")
+	dirPath := filepath.Dir(dataPath)
+
+	_, err = os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		err := os.MkdirAll(dirPath, os.ModePerm)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return dataPath, nil
 }

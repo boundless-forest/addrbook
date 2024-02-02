@@ -278,8 +278,8 @@ func run(args []string) error {
 		NewWorkSpaceCommand(),
 	}
 
-	db, err := LoadDB()
-	if err != nil {
+	db := DataBase{}
+	if err := LoadDB(&db); err != nil {
 		return errors.New("load workspaces error: " + err.Error())
 	}
 
