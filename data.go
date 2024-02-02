@@ -218,12 +218,14 @@ func generateHtmlPage(db *DataBase) (string, error) {
 		<!DOCTYPE html>
 		<html>
 		<head>
-			<title>Contracts</title>
+			<title>Workspaces</title>
+			<link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
 			<style>
 				table {
 					width: 50%;
 					margin: auto;
 					border-collapse: collapse;
+					font-family: 'Fira Code', monospace;
 				}
 				th, td {
 					border: 3px solid black;
