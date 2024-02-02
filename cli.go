@@ -31,6 +31,7 @@ func (wsc *WorkSpaceCommand) Run(db *DataBase) error {
 
 	subCmds := []Runner{
 		NewWsNewCommand(),
+		NewWsDelCommand(),
 		NewWsListCommand(),
 		NewWsSaveCommand(),
 		NewWsUpdateCommand(),
@@ -264,12 +265,12 @@ type Runner interface {
 
 func printUsage() {
 	fmt.Println("addrbook Usage:")
-	fmt.Println("  workspace new --name <name>,                                                     Create a new workspace to manage the contract addresses.")
-	fmt.Println("  workspace del --name <name>,                                                     Delete a new workspace to manage the contract addresses.")
+	fmt.Println("  workspace new --name <name>,                                                     Create a new workspace.")
+	fmt.Println("  workspace del --name <name>,                                                     Delete a new workspace.")
 	fmt.Println("  workspace list,                                                                  List the workspaces managed by the current user.")
 	fmt.Println("  workspace save   --workspace <workspace> --contract <contract> --address <addr>, Save the contract address into the workspace.")
-	fmt.Println("  workspace update --workspace <workspace> --contract <contract> --address <addr>, Update the contract address into the workspace.")
-	fmt.Println("  workspace delete --workspace <workspace> --contract <contract> --address <addr>, Update the contract address into the workspace.")
+	fmt.Println("  workspace update --workspace <workspace> --contract <contract> --address <addr>, Update the contract address in the specified workspace.")
+	fmt.Println("  workspace delete --workspace <workspace> --contract <contract> --address <addr>, Update the contract address in the specified workspace.")
 }
 
 func run(args []string) error {
