@@ -226,9 +226,9 @@ func generateHtmlPage(db *DataBase) (string, error) {
 				{{range $ws := .Workspaces}}
 				{{range $contract := $ws.Contract}}
 				<tr>
-					<td>{{$contract.Value.Name}}</td>
-					<td>{{$contract.Value.Address}}</td>
-					<td>{{$contract.Value.Note}}</td>
+					<td>{{$contract.Name}}</td>
+					<td>{{$contract.Address}}</td>
+					<td>{{$contract.Note}}</td>
 				</tr>
 				{{end}}
 				{{end}}
