@@ -218,15 +218,15 @@ func generateHtmlPage(db *DataBase) (string, error) {
 		<!DOCTYPE html>
 		<html>
 		<head>
-			<title>Contracts</title>
+			<title>Workspaces</title>
 			<style>
 				table {
-					width: 60%;
+					width: 40%;
 					margin: auto;
 					border-collapse: collapse;
 				}
 				th, td {
-					border: 1px solid black;
+					border: 3px solid black;
 					text-align: center;
 				}
 				td {
@@ -236,16 +236,17 @@ func generateHtmlPage(db *DataBase) (string, error) {
 					width: 10%;
 				}
 				.twenty {
-					width: 20%;
+					width: 15%;
 				}
 				.thirty {
-					width: 30%;
+					width: 15%;
+					text-align: left;
 				}
 			</style>
 		</head>
 		<body>
 			{{range $wsKey, $ws := .Workspaces}}
-			<h2 style="text-align:center;">{{$wsKey}}</h2>
+			<h2 style="text-align:left;">{{$wsKey}}</h2>
 			<table>
 				<colgroup>
 					<col class="ten" />
