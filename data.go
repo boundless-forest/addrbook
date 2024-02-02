@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"html/template"
 	"io"
 	"os"
 	"path/filepath"
@@ -209,4 +211,38 @@ func dataPath() (string, error) {
 	}
 
 	return dataPath, nil
+}
+
+func generateHtmlPage(db *DataBase) (string, error) {
+	tmpl, err := template.New("contracts").Parse(`
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<title>Contracts</title>
+		</head>
+		<body>
+			<table>
+				<tr><th>Name</th><th>Address</th><th>Note</th></tr>
+				{{range $ws := .Workspaces}}
+				{{range $contract := $ws.Contract}}
+				<tr>
+					<td>{{$contract.Value.Name}}</td>
+					<td>{{$contract.Value.Address}}</td>
+					<td>{{$contract.Value.Note}}</td>
+				</tr>
+				{{end}}
+				{{end}}
+			</table>
+		</body>
+		</html>`)
+	if err != nil {
+		return "", err
+	}
+
+	var tpl bytes.Buffer
+	if err := tmpl.Execute(&tpl, db); err != nil {
+		return "", err
+	}
+
+	return tpl.String(), nil
 }

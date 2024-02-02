@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 )
 
@@ -33,6 +34,7 @@ func (wsc *WorkSpaceCommand) Run(db *DataBase) error {
 		NewWsNewCommand(),
 		NewWsDelCommand(),
 		NewWsListCommand(),
+		NewWsOpenCommand(),
 		NewWsSaveCommand(),
 		NewWsUpdateCommand(),
 		NewWsDeleteCommand(),
@@ -143,6 +145,40 @@ func (list *WsListCommand) Init(args []string) error {
 }
 func (list *WsListCommand) Run(db *DataBase) error {
 	fmt.Println("workspaces:", db.ListWorkSpaces())
+	return nil
+}
+
+// workspace open ...
+
+type WsOpenCommand struct {
+	fs *flag.FlagSet
+}
+
+func NewWsOpenCommand() *WsOpenCommand {
+	open := WsOpenCommand{
+		fs: flag.NewFlagSet("open", flag.ContinueOnError),
+	}
+	return &open
+}
+func (open *WsOpenCommand) Name() string {
+	return open.fs.Name()
+}
+func (open *WsOpenCommand) Init(args []string) error {
+	return open.fs.Parse(args)
+}
+func (open *WsOpenCommand) Run(db *DataBase) error {
+	fmt.Println("open the workspace with the default browser, remove it later")
+
+	html, err := generateHtmlPage(db)
+	if err != nil {
+		return err
+	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+	})
+
+	http.ListenAndServe(":8080", nil)
 	return nil
 }
 
@@ -268,6 +304,7 @@ func printUsage() {
 	fmt.Println("  workspace new --name <name>,                                                     Create a new workspace.")
 	fmt.Println("  workspace del --name <name>,                                                     Delete a new workspace.")
 	fmt.Println("  workspace list,                                                                  List the workspaces managed by the current user.")
+	fmt.Println("  workspace open,                                                                  Open the workspace with the default browser.")
 	fmt.Println("  workspace save   --workspace <workspace> --contract <contract> --address <addr>, Save the contract address into the workspace.")
 	fmt.Println("  workspace update --workspace <workspace> --contract <contract> --address <addr>, Update the contract address in the specified workspace.")
 	fmt.Println("  workspace delete --workspace <workspace> --contract <contract> --address <addr>, Update the contract address in the specified workspace.")
