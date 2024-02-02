@@ -229,7 +229,6 @@ func generateHtmlPage(db *DataBase) (string, error) {
 				}
 				th, td {
 					border: 3px solid black;
-					padding: 5px;
 				}
 				td {
 					word-wrap: break-word;
