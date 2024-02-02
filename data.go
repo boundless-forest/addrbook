@@ -218,41 +218,38 @@ func generateHtmlPage(db *DataBase) (string, error) {
 		<!DOCTYPE html>
 		<html>
 		<head>
-			<title>Workspaces</title>
+			<title>Contracts</title>
 			<style>
 				table {
-					width: 40%;
+					width: 50%;
 					margin: auto;
 					border-collapse: collapse;
 				}
 				th, td {
 					border: 3px solid black;
-					text-align: center;
+					padding: 5px;
 				}
 				td {
 					word-wrap: break-word;
 				}
-				.ten {
+				td:nth-child(1) {
 					width: 10%;
+					text-align: center;
 				}
-				.twenty {
-					width: 15%;
+				td:nth-child(2) {
+					width: 20%;
+					text-align: center;
 				}
-				.thirty {
-					width: 15%;
+				td:nth-child(3) {
+					width: 30%;
 					text-align: left;
 				}
 			</style>
 		</head>
 		<body>
 			{{range $wsKey, $ws := .Workspaces}}
-			<h2 style="text-align:left;">{{$wsKey}}</h2>
+			<h2 style="text-align:center;">{{$wsKey}}</h2>
 			<table>
-				<colgroup>
-					<col class="ten" />
-					<col class="twenty" />
-					<col class="thirty" />
-				</colgroup>
 				<tr><th>Name</th><th>Address</th><th>Note</th></tr>
 				{{range $contractKey, $contract := $ws.Contract}}
 				<tr>
