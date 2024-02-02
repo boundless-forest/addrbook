@@ -15,7 +15,7 @@ type Contract struct {
 }
 
 type WorkSpace struct {
-	Cs map[string]Contract
+	Contract map[string]Contract
 }
 
 type DataBase struct {
@@ -37,7 +37,7 @@ func (db *DataBase) CreateWorkSpace(name string) error {
 		return ErrWorkSpaceExists
 	}
 
-	db.Workspaces[name] = WorkSpace{Cs: make(map[string]Contract)}
+	db.Workspaces[name] = WorkSpace{Contract: make(map[string]Contract)}
 	return nil
 }
 
@@ -64,11 +64,11 @@ func (db *DataBase) Save(workspace string, contract string, address string, note
 	}
 
 	ws := db.Workspaces[workspace]
-	if _, ok := ws.Cs[contract]; ok {
+	if _, ok := ws.Contract[contract]; ok {
 		return ErrContractExists
 	}
 
-	ws.Cs[contract] = Contract{
+	ws.Contract[contract] = Contract{
 		Name:    contract,
 		Address: address,
 		Note:    note,
@@ -84,7 +84,7 @@ func (db *DataBase) Update(workspace string, contract string, address string, no
 		return ErrWorkSpaceNotFound
 	}
 
-	existingContract, ok := ws.Cs[contract]
+	existingContract, ok := ws.Contract[contract]
 	if !ok {
 		return ErrContractNotFound
 	}
@@ -93,7 +93,7 @@ func (db *DataBase) Update(workspace string, contract string, address string, no
 		return errors.New("the new contract information is the same as the old one")
 	}
 
-	ws.Cs[contract] = Contract{
+	ws.Contract[contract] = Contract{
 		Name:    contract,
 		Address: address,
 		Note:    note,
@@ -109,11 +109,11 @@ func (db *DataBase) Delete(workspace string, contract string) error {
 		return ErrWorkSpaceNotFound
 	}
 
-	if _, ok := ws.Cs[contract]; !ok {
+	if _, ok := ws.Contract[contract]; !ok {
 		return ErrContractNotFound
 	}
 
-	delete(ws.Cs, contract)
+	delete(ws.Contract, contract)
 
 	db.Workspaces[workspace] = ws
 	return nil
