@@ -268,8 +268,8 @@ type WsDeleteCommand struct {
 	contract  string
 }
 
-func NewWsDeleteCommand() *WsSaveCommand {
-	delete := WsSaveCommand{
+func NewWsDeleteCommand() *WsDeleteCommand {
+	delete := WsDeleteCommand{
 		fs: flag.NewFlagSet("delete", flag.ContinueOnError),
 	}
 	delete.fs.StringVar(&delete.workspace, "workspace", "", "The name of the workspace")
