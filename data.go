@@ -218,7 +218,7 @@ func generateHtmlPage(db *DataBase) (string, error) {
 		<!DOCTYPE html>
 		<html>
 		<head>
-			<title>Workspaces</title>
+			<title>Contracts Workspaces</title>
 			<link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
 			<style>
 				table {
@@ -238,7 +238,7 @@ func generateHtmlPage(db *DataBase) (string, error) {
 					text-align: center;
 				}
 				td:nth-child(2) {
-					width: 20%;
+					width: 10%;
 					text-align: center;
 				}
 				td:nth-child(3) {
@@ -251,7 +251,7 @@ func generateHtmlPage(db *DataBase) (string, error) {
 			{{range $wsKey, $ws := .Workspaces}}
 			<h2 style="text-align:center;">{{$wsKey}}</h2>
 			<table>
-				<tr><th>Name</th><th>Address</th><th>Note</th></tr>
+				<tr><th>Contract Name</th><th>Contract Address</th><th>Contract Note</th></tr>
 				{{range $contractKey, $contract := $ws.Contract}}
 				<tr>
 					<td>{{$contract.Name}}</td>
