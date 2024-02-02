@@ -221,16 +221,26 @@ func generateHtmlPage(db *DataBase) (string, error) {
 			<title>Contracts</title>
 			<style>
 				table {
-					width: 100%;
-					border-collapse: collapse;
+					width: 60%;
+					margin: auto;
+					table-layout: fixed;
 				}
 				th, td {
 					border: 1px solid black;
 					padding: 5px;
-					text-align: left;
+					text-align: center;
 				}
 				td {
 					word-wrap: break-word;
+				}
+				.ten {
+					width: 10%;
+				}
+				.twenty {
+					width: 20%;
+				}
+				.thirty {
+					width: 30%;
 				}
 			</style>
 		</head>
@@ -238,6 +248,11 @@ func generateHtmlPage(db *DataBase) (string, error) {
 			{{range $wsKey, $ws := .Workspaces}}
 			<h2>{{$wsKey}}</h2>
 			<table>
+				<colgroup>
+					<col class="ten" />
+					<col class="twenty" />
+					<col class="thirty" />
+				</colgroup>
 				<tr><th>Name</th><th>Address</th><th>Note</th></tr>
 				{{range $contractKey, $contract := $ws.Contract}}
 				<tr>
@@ -253,6 +268,7 @@ func generateHtmlPage(db *DataBase) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	var tpl bytes.Buffer
 	if err := tmpl.Execute(&tpl, db); err != nil {
 		return "", err
