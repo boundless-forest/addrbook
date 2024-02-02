@@ -223,11 +223,10 @@ func generateHtmlPage(db *DataBase) (string, error) {
 				table {
 					width: 60%;
 					margin: auto;
-					table-layout: fixed;
+					border-collapse: collapse;
 				}
 				th, td {
 					border: 1px solid black;
-					padding: 5px;
 					text-align: center;
 				}
 				td {
@@ -246,7 +245,7 @@ func generateHtmlPage(db *DataBase) (string, error) {
 		</head>
 		<body>
 			{{range $wsKey, $ws := .Workspaces}}
-			<h2>{{$wsKey}}</h2>
+			<h2 style="text-align:center;">{{$wsKey}}</h2>
 			<table>
 				<colgroup>
 					<col class="ten" />
