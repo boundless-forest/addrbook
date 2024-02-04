@@ -14,3 +14,8 @@ go build .
 # Update contract address
 
 ./addrbook workspace update --workspace MyProject1 --contract Contract2 --address 0x000000000000000000000000000000000000000y --note "Updated note version"
+
+# Check with the browser
+
+echo "See the "http://127.0.0.1:8080" for all workspaces contract information."
+./addrbook workspace open
