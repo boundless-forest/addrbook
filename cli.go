@@ -104,7 +104,7 @@ func (new *WsNewCommand) Run(db *DataBase) error {
 		return errors.New("save workspaces error: " + err.Error())
 	}
 
-	fmt.Printf("workspace %s created successfully", new.name)
+	fmt.Printf("workspace %s created successfully \n", new.name)
 	return nil
 }
 
@@ -236,7 +236,7 @@ func (save *WsSaveCommand) Run(db *DataBase) error {
 		return errors.New("save workspaces error: " + err.Error())
 	}
 
-	fmt.Println("The contract information has been saved successfully")
+	fmt.Printf("The contract information [%s -> %s] has been saved successfully. \n", save.contract, save.address)
 	return nil
 }
 
@@ -274,7 +274,7 @@ func (update *WsUpdateCommand) Run(db *DataBase) error {
 	if err := SaveToDB(db); err != nil {
 		return errors.New("save workspaces error: " + err.Error())
 	}
-	fmt.Println("The contract information has been updated successfully")
+	fmt.Printf("The contract information [%s] has been updated successfully. \n", update.contract)
 	return nil
 }
 
@@ -308,7 +308,7 @@ func (delete *WsDeleteCommand) Run(db *DataBase) error {
 	if err := SaveToDB(db); err != nil {
 		return errors.New("save workspaces error: " + err.Error())
 	}
-	fmt.Println("The contract information has been deleted successfully")
+	fmt.Printf("The contract information [%s] has been deleted successfully.", delete.contract)
 	return nil
 }
 
