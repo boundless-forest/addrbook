@@ -1,6 +1,6 @@
 # addrbook
 
-For developers working on smart contracts or Web3 applications, managing a multitude of smart contract addresses is a daily task. This tool simplifies the organization and management of these addresses. All data is stored locally, giving you full control over your information.
+For developers working on smart contracts or Web3 applications, managing a multitude of smart contract addresses is a daily task. This tool simplifies the organization and management of these addresses. All data is stored locally in `~/.addrbook/data.json`, giving you full control over your information.
 
 ![Open](./open.png)
 
