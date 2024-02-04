@@ -20,6 +20,7 @@ Using this tool is straightforward and involves just two simple steps:
             --address 0x000000000000000000000000000000000000000x \
             --note "Ethereum side"
     ```
+- Open `http://127.0.0.1:8080` with your default browser abd view your workspace.
 
 ## Run Example
 
