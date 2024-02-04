@@ -188,8 +188,6 @@ func (open *WsOpenCommand) Init(args []string) error {
 	return open.fs.Parse(args)
 }
 func (open *WsOpenCommand) Run(db *DataBase) error {
-	fmt.Println("open the workspace with the default browser, remove it later")
-
 	html, err := generateHtmlPage(db)
 	if err != nil {
 		return err
