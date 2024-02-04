@@ -50,6 +50,27 @@ func (wsc *WorkSpaceCommand) Run(db *DataBase) error {
 	return fmt.Errorf("unknown command %s", os.Args[2])
 }
 
+type HelpCommand struct {
+	fs *flag.FlagSet
+}
+
+func NewHelpCommand() *HelpCommand {
+	h := HelpCommand{
+		fs: flag.NewFlagSet("help", flag.ContinueOnError),
+	}
+	return &h
+}
+func (h *HelpCommand) Init(args []string) error {
+	return h.fs.Parse(args)
+}
+func (h *HelpCommand) Name() string {
+	return h.fs.Name()
+}
+func (h *HelpCommand) Run(db *DataBase) error {
+	printUsage()
+	return nil
+}
+
 // workspace new ...
 
 type WsNewCommand struct {
@@ -300,19 +321,20 @@ type Runner interface {
 }
 
 func printUsage() {
-	fmt.Println("addrbook Usage:")
-	fmt.Println("  workspace new --name <name>,                                                     Create a new workspace.")
-	fmt.Println("  workspace del --name <name>,                                                     Delete a new workspace.")
-	fmt.Println("  workspace list,                                                                  List the workspaces managed by the current user.")
-	fmt.Println("  workspace open,                                                                  Open the workspace with the default browser.")
-	fmt.Println("  workspace save   --workspace <workspace> --contract <contract> --address <addr>, Save the contract address into the workspace.")
-	fmt.Println("  workspace update --workspace <workspace> --contract <contract> --address <addr>, Update the contract address in the specified workspace.")
-	fmt.Println("  workspace delete --workspace <workspace> --contract <contract> --address <addr>, Update the contract address in the specified workspace.")
+	fmt.Println("Usage:")
+	fmt.Println("  workspace new --name <name>,  Create a new workspace.")
+	fmt.Println("  workspace del --name <name>,  Delete a new workspace.")
+	fmt.Println("  workspace list,               List the workspaces managed by the current user.")
+	fmt.Println("  workspace open,               Open the workspace with the default browser at http://127.0.0.1:8080.")
+	fmt.Println("  workspace save   --workspace <workspace> --contract <name> --address <addr>, --note <something>, Save the contract address into the workspace.")
+	fmt.Println("  workspace update --workspace <workspace> --contract <name> --address <addr>, --note <something>, Update the contract address in the specified workspace.")
+	fmt.Println("  workspace delete --workspace <workspace> --contract <name> --address <addr>, --note <something>, Update the contract address in the specified workspace.")
 }
 
 func run(args []string) error {
 	cmds := []Runner{
 		NewWorkSpaceCommand(),
+		NewHelpCommand(),
 	}
 
 	db := DataBase{}
