@@ -14,7 +14,11 @@ Using this tool is straightforward and involves just two simple steps:
     ```
 - Add your smart contract information to the workspace. The tool also supports updating and deleting any saved contract information.
     ```sh
-    ./addrbook workspace save --workspace MyProject1 --contract Contract1 --address 0x000000000000000000000000000000000000000x --note "Ethereum side"
+    ./addrbook workspace save \
+            --workspace MyProject1 \
+            --contract Contract1 \
+            --address 0x000000000000000000000000000000000000000x \
+            --note "Ethereum side"
     ```
 
 ## Run Example
